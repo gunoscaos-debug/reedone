@@ -1,0 +1,70 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body,
+  html {
+    background-color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Sembunyikan semua elemen yang tidak perlu dicetak */
+  .no-print,
+  #root > div > aside /* Sidebar */ {
+    display: none !important;
+  }
+
+  /* Pastikan konten utama mengisi halaman */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .printable-area {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Sembunyikan input dan tampilkan nilainya saja */
+  .printable-area input,
+  .printable-area textarea,
+  .printable-area select {
+    display: none;
+  }
+
+  .print-only {
+    display: block !important; /* Tampilkan elemen yang hanya untuk cetak */
+    white-space: pre-wrap; /* Jaga format teks */
+  }
+
+  .print-only-text {
+    display: block !important;
+  }
+
+  .signature-block {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-logo {
+    width: 72px !important; /* 1.875rem */
+    height: 72px !important;
+  }
+
+  /* 
+    Reset layout grid dan flex untuk cetak.
+    Ini akan membuat kolom-kolom (seperti Ekskul & Prestasi) 
+    tersusun secara vertikal, bukan berdampingan.
+  */
+  .printable-area .grid {
+    display: block !important;
+  }
+  .printable-area .grid > div {
+    margin-top: 1.5rem; /* Memberi jarak antar bagian */
+  }
+}

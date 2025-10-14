@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "types": ["node"],
+    "jsx": "react-jsx"
+  },
+  "include": ["vite.config.ts", "vite.config.js", "postcss.config.js", "tailwind.config.js"]
+}

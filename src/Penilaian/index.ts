@@ -1,0 +1,1 @@
+export { default as PenilaianPage } from './PenilaianPage';
