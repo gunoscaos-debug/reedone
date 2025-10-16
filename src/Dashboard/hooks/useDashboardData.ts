@@ -18,6 +18,7 @@ export const useDashboardData = () => {
   
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     loadData();
@@ -26,6 +27,7 @@ export const useDashboardData = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      setError(null);
       
       // Simulasi pengambilan data statistik
       setTimeout(() => {
@@ -39,8 +41,9 @@ export const useDashboardData = () => {
       // Ambil aktivitas dari database
       const storedActivities = await db.activities.orderBy('timestamp').reverse().limit(10).toArray();
       setActivities(storedActivities);
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+      setError(err as Error);
     } finally {
       setLoading(false);
     }
@@ -59,6 +62,7 @@ export const useDashboardData = () => {
     stats,
     activities,
     loading,
+    error,
     addActivity,
     refreshData: loadData
   };

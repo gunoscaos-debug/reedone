@@ -3,8 +3,8 @@ import Button from '@/Komponen/Button';
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import toast, { Toaster } from 'react-hot-toast';
-import ProfileHeader from './ProfileHeader';
-import ProfileDetails from './ProfileDetails';
+import ProfileHeader from './components/ProfileHeader';
+import ProfileDetails from './components/ProfileDetails';
 import { useGuruData } from './hooks/useGuruData';
 import { Camera, Mail, Phone, User, Edit, Image as ImageIcon } from 'lucide-react';
 import { GuruProfile } from './database';
@@ -122,13 +122,13 @@ const GuruPage: React.FC = () => {
       <Toaster position="top-right" />
       
       <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white">Profil Guru</h1>
-        <p className="mt-1 text-slate-600 dark:text-slate-400">Kelola informasi dan detail profil Anda.</p>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Profil Guru</h1>
+        <p className="mt-1 text-slate-600">Kelola informasi dan detail profil Anda.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft overflow-hidden">
+          <div className="bg-white rounded-xl shadow-soft overflow-hidden">
             <div className="relative">
               {/* Background/Cover Photo */}
               <div className="h-40 bg-gradient-to-r from-primary-500 to-blue-500 group">
@@ -158,11 +158,11 @@ const GuruPage: React.FC = () => {
                     <img 
                       src={profile.foto} 
                       alt="Profile" 
-                      className="w-32 h-32 rounded-full object-cover border-4 border-white dark:border-slate-800 shadow-lg"
+                      className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center border-4 border-white dark:border-slate-800 shadow-lg">
-                      <User className="w-16 h-16 text-slate-400 dark:text-slate-500" />
+                    <div className="w-32 h-32 rounded-full bg-slate-200 flex items-center justify-center border-4 border-white shadow-lg">
+                      <User className="w-16 h-16 text-slate-400" />
                     </div>
                   )}
                   
@@ -185,8 +185,8 @@ const GuruPage: React.FC = () => {
                 accept="image/*"
                 className="hidden"
               />
-              <h2 className="text-xl font-semibold mt-4 text-slate-800 dark:text-white">{profile.nama || 'Nama Guru'}</h2>
-              <p className="text-slate-600 dark:text-slate-400">{profile.mataPelajaran || 'Mata Pelajaran'}</p>
+              <h2 className="text-xl font-semibold mt-4 text-slate-800">{profile.nama || 'Nama Guru'}</h2>
+              <p className="text-slate-600">{profile.mataPelajaran || 'Mata Pelajaran'}</p>
               
               <div className="mt-4 w-full">
                 <Button 
@@ -201,9 +201,9 @@ const GuruPage: React.FC = () => {
             </div>
           </div>
           
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft p-6 mt-6">
-            <h3 className="font-medium text-slate-800 dark:text-white mb-3">Informasi Kontak</h3>
-            <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+          <div className="bg-white rounded-xl shadow-soft p-6 mt-6">
+            <h3 className="font-medium text-slate-800 mb-3">Informasi Kontak</h3>
+            <div className="space-y-3 text-sm text-slate-600">
               <div className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-slate-400" />
                 <span>{profile.email || 'Belum diisi'}</span>
@@ -225,8 +225,8 @@ const GuruPage: React.FC = () => {
       {/* Crop Modal */}
       {showCropModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">Potong Foto Profil</h3>
+          <div className="bg-white rounded-xl shadow-soft p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold mb-4 text-slate-800">Potong Foto Profil</h3>
             <div className="flex justify-center">
               {profileImage && (
                 <ReactCrop                  
@@ -258,8 +258,8 @@ const GuruPage: React.FC = () => {
       {/* Background Crop Modal */}
       {showBgCropModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft p-6 max-w-2xl w-full">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800 dark:text-white">Potong Foto Latar</h3>
+          <div className="bg-white rounded-xl shadow-soft p-6 max-w-2xl w-full">
+            <h3 className="text-lg font-semibold mb-4 text-slate-800">Potong Foto Latar</h3>
             <div className="flex justify-center">
               {bgImage && (
                 <ReactCrop

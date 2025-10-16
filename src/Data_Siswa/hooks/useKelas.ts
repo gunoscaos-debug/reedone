@@ -19,25 +19,33 @@ export const useKelas = () => {
     queryClient.invalidateQueries({ queryKey: ['kelas'] });
   };
 
-  const addKelasMutation = useMutation<void, Error, { nama: string; waliKelas?: string; kontakWaliKelas?: string }>({
-    mutationFn: async ({ nama, waliKelas, kontakWaliKelas }) => {
-      const existing = kelasList.find(k => k.nama && k.nama.toLowerCase() === nama.toLowerCase());
-      if (existing) return;
-      await db.kelas.add({ nama, waliKelas, kontakWaliKelas });
+  const addKelasMutation = useMutation<void, Error, Omit<Kelas, 'id'>>({
+    mutationFn: async (newKelas) => {
+      const existing = await db.kelas.where('nama').equalsIgnoreCase(newKelas.nama).first();
+      if (existing) {
+        throw new Error(`Kelas dengan nama "${newKelas.nama}" sudah ada.`);
+      }
+      await db.kelas.add(newKelas);
     },
     onSuccess: handleSuccess,
   });
 
   const updateKelasMutation = useMutation<void, Error, { id: string; updates: Partial<Kelas> }>({
     mutationFn: async ({ id, updates }) => {
-      await db.kelas.update(id, updates);
+      // Pastikan semua field yang relevan disertakan dalam pembaruan
+      const dataToUpdate: Partial<Kelas> = {
+        nama: updates.nama,
+        waliKelas: updates.waliKelas,
+        kontakWaliKelas: updates.kontakWaliKelas,
+      };
+      await db.kelas.update(id, dataToUpdate);
     },
     onSuccess: handleSuccess,
   });
 
   const deleteKelasMutation = useMutation<void, Error, string>({
     mutationFn: async (id) => {
-      await db.kelas.delete(id);
+      return db.kelas.delete(id);
     },
     onSuccess: handleSuccess,
   });
@@ -46,7 +54,7 @@ export const useKelas = () => {
     kelasList,
     loading,
     error: error ? error.message : null,
-    addKelas: (nama: string, waliKelas?: string, kontakWaliKelas?: string) => addKelasMutation.mutateAsync({ nama, waliKelas, kontakWaliKelas }),
+    addKelas: addKelasMutation.mutateAsync,
     updateKelas: (id: string, updates: Partial<Kelas>) => updateKelasMutation.mutateAsync({ id, updates }),
     deleteKelas: deleteKelasMutation.mutateAsync,
   };

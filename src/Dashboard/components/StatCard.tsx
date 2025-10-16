@@ -16,8 +16,8 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
             {icon}
           </div>
           <div className="ml-4">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</h3>
-            <p className="text-2xl font-bold text-slate-800 dark:text-white">{value}</p>
+            <h3 className="text-sm font-medium text-slate-500">{title}</h3>
+            <p className="text-2xl font-bold text-slate-800">{value}</p>
           </div>
         </div>
       </div>

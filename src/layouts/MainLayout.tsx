@@ -2,17 +2,14 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './sidebar';
 import { FaBars } from 'react-icons/fa';
+import { useUIStore } from '@/stores/useUIStore';
 
 const MainLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-
-  const toggleSidebarCollapse = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
+  const { isSidebarCollapsed, toggleSidebarCollapse } = useUIStore();
 
   return (
-    <div className="flex h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="flex h-screen bg-slate-50">
       {/* Sidebar untuk Desktop */}
       <div className={`hidden md:flex md:flex-shrink-0 transition-all duration-300 ${isSidebarCollapsed ? 'md:w-20' : 'md:w-64'}`}>
         <Sidebar 
@@ -26,9 +23,9 @@ const MainLayout: React.FC = () => {
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Tombol Menu Mobile */}
         {!isSidebarOpen && (
-          <header className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-            <h1 className="text-xl font-bold text-slate-800 dark:text-white">Menu</h1>
-            <button onClick={() => setIsSidebarOpen(true)} className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">
+          <header className="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200">
+            <h1 className="text-xl font-bold text-slate-800">Menu</h1>
+            <button onClick={() => setIsSidebarOpen(true)} className="text-slate-500 hover:text-slate-700 focus:outline-none p-2 rounded-md hover:bg-slate-100">
               <FaBars size={20} />
             </button>
           </header>

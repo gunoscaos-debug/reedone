@@ -66,6 +66,14 @@ export interface AIAnalysisResponse {
   relatedId?: string;
 }
 
+export interface Activity {
+  id?: number;
+  title: string;
+  description: string;
+  timestamp: Date;
+  type: 'info' | 'warning' | 'success' | 'error';
+}
+
 export class AppDB extends Dexie {
   students!: EntityTable<Student, 'id'>;
   subjects!: EntityTable<Subject, 'id'>;
@@ -73,16 +81,35 @@ export class AppDB extends Dexie {
   settings!: EntityTable<Settings, 'id'>;
   guruProfiles!: EntityTable<GuruProfile, 'id'>;
   analyses!: EntityTable<AIAnalysisResponse, 'id'>;
+  activities!: EntityTable<Activity, 'id'>;
 
   constructor() {
     super('AppDatabase');
-    this.version(4).stores({ // Bump version due to schema changes
+    this.version(5).stores({ // Bump version due to schema changes
       students: '++id, name, nisn, class',
       subjects: '++id, nama, waliKelas, kontakWaliKelas',
       grades: '++id, &[studentId+subjectId]',
       settings: '++id, apiKey', // Add apiKey to settings
       guruProfiles: '++id, nama, nip',
       analyses: 'id, type, timestamp', // 'id' as primary key, not auto-incremented
+      activities: '++id, timestamp, type',
+    });
+
+    this.on('populate', () => {
+      this.activities.bulkAdd([
+        {
+          title: 'Sistem diperbarui',
+          description: 'Versi 1.2.0 telah diterapkan',
+          timestamp: new Date(),
+          type: 'info'
+        },
+        {
+          title: 'Data siswa ditambahkan',
+          description: '20 data siswa baru telah diimpor',
+          timestamp: new Date(Date.now() - 86400000), // 1 day ago
+          type: 'success'
+        }
+      ]);
     });
   }
 }

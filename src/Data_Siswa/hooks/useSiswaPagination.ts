@@ -14,11 +14,10 @@ export const useSiswaPagination = (data: Siswa[], initialRowsPerPage = 10) => {
 
   // Reset ke halaman 1 jika data berubah dan halaman saat ini menjadi tidak valid
   useEffect(() => {
-    // Jika total halaman lebih dari 0 dan halaman saat ini di luar jangkauan, reset ke halaman terakhir.
-    // Jika total halaman adalah 0, reset ke halaman 1.
-    const newTotalPages = Math.max(totalPages, 1);
-    if (currentPage > newTotalPages) setCurrentPage(newTotalPages);
-  }, [data, currentPage, totalPages]);
+    if (safeData.length > 0 && currentPage > totalPages) {
+      setCurrentPage(totalPages || 1);
+    }
+  }, [safeData, currentPage, totalPages]);
 
   return {
     currentPage,

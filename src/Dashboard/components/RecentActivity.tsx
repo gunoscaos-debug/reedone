@@ -9,7 +9,7 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
   return (
     <div className="card">
       <div className="p-5">
-        <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Aktivitas Terbaru</h2>
+        <h2 className="text-lg font-semibold text-slate-800 mb-4">Aktivitas Terbaru</h2>
         <div className="space-y-4">
           {activities.length > 0 ? (
             activities.map((activity) => (
@@ -25,20 +25,20 @@ const RecentActivity: React.FC<RecentActivityProps> = ({ activities }) => {
                    activity.type === 'warning' ? '⚠' : '✕'}
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-slate-800 dark:text-white">
+                  <p className="text-sm font-medium text-slate-800">
                     {activity.title}
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                  <p className="text-sm text-slate-600">
                     {activity.description}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  <p className="text-xs text-slate-500 mt-1">
                     {activity.timestamp instanceof Date ? activity.timestamp.toLocaleString() : new Date(activity.timestamp).toLocaleString()}
                   </p>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-slate-500 dark:text-slate-400 text-center py-4">
+            <p className="text-slate-500 text-center py-4">
               Tidak ada aktivitas terbaru
             </p>
           )}

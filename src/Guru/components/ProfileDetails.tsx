@@ -42,9 +42,9 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profile, onSave, isEdit
 
   if (isEditing) {
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft p-6">
+      <div className="bg-white rounded-xl shadow-soft p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Edit Detail Profil</h2>
+          <h2 className="text-lg font-semibold text-slate-800">Edit Detail Profil</h2>
           <Button type="submit" form="profile-details-form" disabled={isSubmitting}>
             Simpan
           </Button>
@@ -52,7 +52,7 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profile, onSave, isEdit
         
         <form id="profile-details-form" onSubmit={handleSubmit(onSave)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-slate-600 mb-1">
               Tentang Saya
             </label>
             <textarea
@@ -64,7 +64,7 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profile, onSave, isEdit
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-slate-600 mb-1">
               Kualifikasi
             </label>
             <textarea
@@ -77,7 +77,7 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profile, onSave, isEdit
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-slate-600 mb-1">
               Pengalaman Mengajar
             </label>
             <textarea
@@ -94,42 +94,37 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profile, onSave, isEdit
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-soft p-6">
-      <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Detail Profil</h2>
-      
-      <div className="space-y-6">
-        <div>
-          <h3 className="font-medium text-slate-800 dark:text-white mb-2">Tentang Saya</h3>
-          <p className="text-slate-600 dark:text-slate-400 whitespace-pre-line text-sm">
+    <div className="bg-white rounded-xl shadow-soft p-6">
+      <div className="space-y-8">
+        <Section title="Tentang Saya" icon={<User size={20} className="text-gray-500" />}>
+          <p className="text-gray-600 whitespace-pre-line text-sm">
             {profile?.tentang || 'Belum ada informasi tentang saya'}
           </p>
-        </div>
+        </Section>
 
-        <div>
-          <h3 className="font-medium text-slate-800 dark:text-white mb-2">Kualifikasi</h3>
+        <Section title="Kualifikasi" icon={<Award size={20} className="text-gray-500" />}>
           {profile?.kualifikasi ? (
-            <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1 whitespace-pre-line text-sm">
-              {profile.kualifikasi.split('\n').map((item, index) => (
+            <ul className="list-disc list-inside text-gray-600 space-y-1 whitespace-pre-line text-sm">
+              {profile.kualifikasi.split('\n').filter(item => item.trim() !== '').map((item, index) => (
                 <li key={index}>{item}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-slate-500 text-sm">Belum ada informasi kualifikasi</p>
+            <p className="text-gray-500 text-sm">Belum ada informasi kualifikasi</p>
           )}
-        </div>
+        </Section>
 
-        <div>
-          <h3 className="font-medium text-slate-800 dark:text-white mb-2">Pengalaman Mengajar</h3>
+        <Section title="Pengalaman Mengajar" icon={<Briefcase size={20} className="text-gray-500" />}>
           {profile?.pengalaman ? (
-            <ul className="list-disc list-inside text-slate-600 dark:text-slate-400 space-y-1 whitespace-pre-line text-sm">
-              {profile.pengalaman.split('\n').map((item, index) => (
+            <ul className="list-disc list-inside text-gray-600 space-y-1 whitespace-pre-line text-sm">
+              {profile.pengalaman.split('\n').filter(item => item.trim() !== '').map((item, index) => (
                 <li key={index}>{item}</li>
               ))}
             </ul>
           ) : (
-            <p className="text-slate-500 text-sm">Belum ada informasi pengalaman mengajar</p>
+            <p className="text-gray-500 text-sm">Belum ada informasi pengalaman mengajar</p>
           )}
-        </div>
+        </Section>
       </div>
     </div>
   );

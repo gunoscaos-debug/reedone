@@ -1,38 +1,21 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import React, { Suspense, lazy } from 'react';
 import MainLayout from '@/layouts/MainLayout';
-import MaintenancePage from '@/Dashboard/pages/MaintenancePage';
+import { MaintenancePage } from '@/Maintenance';
 import LoginPage from '@/Login/LoginPage';
 import { ApiKeyProvider } from "@/AI/contexts/ApiKeyContext.tsx";
 import { RaportDataProvider } from "@/Raport";
 
 // Lazy load page components
 const DashboardPage = lazy(() => import('@/Dashboard/pages/DashboardPage'));
-const GuruPage = lazy(() => import('@/Guru/GuruPage'));
+const GuruPage = lazy(() => import('@/Guru/pages/GuruPage'));
 const ManajemenSiswaPage = lazy(() => import('@/Data_Siswa/pages/ManajemenSiswaPage'));
-const PenilaianPage = lazy(() => import('@/Penilaian/PenilaianPage.tsx'));
+const PenilaianPage = lazy(() => import('@/Penilaian/pages/PenilaianPage.tsx'));
 const RaportAiPage = lazy(() => import('@/Raport/pages/RaportAiPage'));
 const BantuanPage = lazy(() => import('./Bantuan/pages/BantuanPage'));
-const PengaturanPage = lazy(() => import('@/Pengaturan/pages/PengaturanPage'));
 
 
-// Inisialisasi tema saat aplikasi dimuat
-const initializeTheme = () => {
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme) {
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  } else {
-    // Default ke dark mode jika tidak ada preferensi tersimpan
-    document.documentElement.classList.add('dark');
-  }
-};
 
-// Jalankan inisialisasi tema
-initializeTheme();
 
 // Komponen ProtectedRoute sederhana
 interface ProtectedRouteProps {
@@ -93,7 +76,7 @@ function App() {
     <ApiKeyProvider>
       <RaportDataProvider>
         <BrowserRouter>
-          <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-background text-foreground">Loading...</div>}>
+          <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Loading...</div>}>
             <Routes>
               {/* Rute untuk halaman login */}
               <Route path="/login" element={<LoginPage />} />
@@ -141,15 +124,6 @@ function App() {
                   <MaintenanceRoute menuKey="bantuan">
                     <BantuanPage />
                   </MaintenanceRoute>
-                } />
-                
-                {/* Halaman Pengaturan (khusus admin) */}
-                <Route path="/dashboard/pengaturan" element={
-                  <AdminRoute>
-                    <MaintenanceRoute menuKey="pengaturan">
-                      <PengaturanPage />
-                    </MaintenanceRoute>
-                  </AdminRoute>
                 } />
               </Route>
               

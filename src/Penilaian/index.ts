@@ -1,1 +1,1 @@
-export { default as PenilaianPage } from './PenilaianPage';
+export { default as PenilaianPage } from './pages/PenilaianPage';

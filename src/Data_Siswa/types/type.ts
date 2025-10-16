@@ -1,3 +1,5 @@
+import { type Subject as Kelas } from '@/data/database';
+
 export interface Siswa {
   id: string;
   nama: string;
@@ -31,11 +33,6 @@ export interface Siswa {
   tujuan_pembelajaran?: string;
 }
 
-export interface Kelas {
-  id: string;
-  nama: string;
-  waliKelas?: string;
-  kontakWaliKelas?: string;
-}
+export type { Kelas };
 
 // Anda bisa menambahkan tipe lain yang dibutuhkan di sini

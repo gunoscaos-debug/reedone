@@ -1,69 +1,48 @@
-import { useState, useCallback } from 'react';
-import { Siswa, Nilai, MapelData } from '@/type';
-import { useApiKey } from './useApiKey';
+import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-
-// Asumsi fungsi ini ada di suatu tempat, misal di utils
-const calculateNilaiAkhir = (nilai: Nilai) => (nilai.nh || 0) * 0.3 + (nilai.uts || 0) * 0.3 + (nilai.uas || 0) * 0.4;
+import {
+  generateStudentAnalysis,
+  generateAttitudeNotes,
+  generateTeacherNote,
+  AttitudeData,
+  TeacherNoteData,
+} from '@/AI/gemini';
+import { Siswa, Nilai } from '@/type';
 
 export const useAIAssistant = () => {
-  const { apiKey } = useApiKey();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [report, setReport] = useState<string | null>(null);
+  // Mutasi untuk analisis siswa
+  const { mutateAsync: analyzeStudent, isPending: isAnalyzingStudent } = useMutation({
+    mutationFn: ({ siswa, nilai, apiKey }: { siswa: Siswa; nilai: Nilai | undefined; apiKey: string }) =>
+      generateStudentAnalysis(siswa, nilai, apiKey),
+    onError: (error: Error) => {
+      toast.error(`Gagal menganalisis siswa: ${error.message}`);
+    },
+  });
 
-  /**
-   * Fungsi untuk menghasilkan prompt AI otomatis berdasarkan data siswa dan nilai.
-   */
-  const generateAutoPrompt = useCallback((siswa: Siswa, nilaiSiswa: Record<string, Nilai>, subjects: MapelData[]): string => {
-    const nilaiData = subjects.map(subject => {
-      const nilai = nilaiSiswa[subject.id];
-      if (!nilai || nilai.nh === null || nilai.uts === null || nilai.uas === null) return `${subject.nama}: belum diisi`;
-      const nilaiAkhir = calculateNilaiAkhir(nilai as Nilai);
-      return `${subject.nama}: ${nilaiAkhir.toFixed(2)}`;
-    }).join(', ');
-    
-    return `Buatkan analisis dan saran akademik untuk siswa ${siswa.nama} dari kelas ${siswa.kelas} dengan nilai: ${nilaiData}. Berikan dalam format yang ramah dan mudah dipahami.`;
-  }, []);
+  // Mutasi untuk catatan sikap
+  const { mutateAsync: createAttitudeNotes, isPending: isCreatingAttitudeNotes } = useMutation({
+    mutationFn: ({ studentName, attitudeData }: { studentName: string; attitudeData: AttitudeData }) =>
+      generateAttitudeNotes(studentName, attitudeData),
+    onError: (error: Error) => {
+      toast.error(`Gagal membuat catatan sikap: ${error.message}`);
+    },
+  });
 
-  /**
-   * Fungsi untuk mengirim prompt ke AI.
-   * @param prompt - Teks prompt yang akan dikirim.
-   */
-  const generateAIResponse = useCallback(async (prompt: string) => {
-    setIsLoading(true);
-    setError(null);
+  // Mutasi untuk catatan wali kelas
+  const { mutateAsync: createTeacherNote, isPending: isCreatingTeacherNote } = useMutation({
+    mutationFn: (data: TeacherNoteData) => generateTeacherNote(data),
+    onError: (error: Error) => {
+      toast.error(`Gagal membuat catatan wali kelas: ${error.message}`);
+    },
+  });
 
-    try {
-      if (!apiKey) {
-        throw new Error("API Key belum diatur.");
-      }
-      // Simulasi pemanggilan API Gemini
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const response = `Ini adalah hasil analisis untuk prompt: "${prompt.substring(0, 50)}..."`;
-      setReport(response);
-      return response;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Terjadi kesalahan tidak diketahui.";
-      setError(message);
-      toast.error(`Gagal menghasilkan respons AI: ${message}`);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [apiKey]);
-
-  const reset = () => {
-    setReport(null);
-    setError(null);
-  };
-
-  return { 
-    isLoading, 
-    error, 
-    report, 
-    generateAutoPrompt,
-    generateAIResponse, 
-    reset 
+  return {
+    analyzeStudent,
+    isAnalyzingStudent,
+    createAttitudeNotes,
+    isCreatingAttitudeNotes,
+    createTeacherNote,
+    isCreatingTeacherNote,
+    isGenerating: isAnalyzingStudent || isCreatingAttitudeNotes || isCreatingTeacherNote,
   };
 };
