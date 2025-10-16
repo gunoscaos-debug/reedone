@@ -175,7 +175,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, onSave, isEditin
             <Controller
               name="kelas"
               control={control}
-              render={({ field }) => <TagInput value={field.value} onChange={field.onChange} />}
+              render={({ field }) => <TagInput value={field.value || []} onChange={field.onChange} />}
             />
             {errors.kelas && <p className="mt-1 text-sm text-red-600">{errors.kelas.message}</p>}
             <p className="text-xs text-slate-500 mt-1.5">Pisahkan setiap kelas dengan koma atau Enter.</p>

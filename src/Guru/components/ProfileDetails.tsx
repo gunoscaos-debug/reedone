@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { GuruProfile } from './database';
+import { GuruProfile } from '../database';
 import Button from '@/Komponen/Button';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Section } from '@/Komponen';
+import { User, Award, Briefcase } from 'lucide-react';
 
 const profileSchema = z.object({
   tentang: z.string().min(1, 'Tentang Saya tidak boleh kosong.'),

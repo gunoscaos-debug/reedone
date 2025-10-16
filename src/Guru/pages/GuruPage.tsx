@@ -3,11 +3,11 @@ import Button from '@/Komponen/Button';
 import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import toast, { Toaster } from 'react-hot-toast';
-import ProfileHeader from './components/ProfileHeader';
-import ProfileDetails from './components/ProfileDetails';
-import { useGuruData } from './hooks/useGuruData';
+import ProfileHeader from '../components/ProfileHeader';
+import ProfileDetails from '../components/ProfileDetails';
+import { useGuruData } from '../hooks/useGuruData';
 import { Camera, Mail, Phone, User, Edit, Image as ImageIcon } from 'lucide-react';
-import { GuruProfile } from './database';
+import { GuruProfile } from '../database';
 
 const GuruPage: React.FC = () => {
   const { profile, loading, updateProfile } = useGuruData();
