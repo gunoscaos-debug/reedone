@@ -8,7 +8,7 @@ import { Home, BookUser, Users, School, ClipboardEdit, BarChart3, HelpCircle, Se
 
 const navItems = [
     { to: '/dashboard', icon: <Home />, label: 'Dashboard', end: true },
-    { to: '/dashboard/guru', icon: <BookUser />, label: 'Data Guru' },
+    { to: '/dashboard/guru', icon: <BookUser />, label: 'Profil Guru' },
     { to: '/dashboard/manajemen-siswa', icon: <Users />, label: 'Data Siswa' },
     { to: '/dashboard/penilaian', icon: <ClipboardEdit />, label: 'Penilaian' },
     { to: '/dashboard/raport-ai', icon: <BarChart3 />, label: 'Raport AI' },

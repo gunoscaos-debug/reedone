@@ -27,7 +27,7 @@ const SiswaTable: React.FC<SiswaTableProps> = ({
 
   const getSortIcon = (key: keyof Siswa) => {
     if (!sortConfig || sortConfig.key !== key) {
-      return <div className="w-4 h-4" />; // Placeholder for alignment
+      return <div className="w-4 h-4 opacity-0 group-hover:opacity-50 transition-opacity" />; // Placeholder
     }
     if (sortConfig.direction === 'ascending') {
       return <ChevronUp className="w-4 h-4" />;
@@ -37,15 +37,17 @@ const SiswaTable: React.FC<SiswaTableProps> = ({
 
   const areAllOnPageSelected = siswaList.length > 0 && siswaList.every(s => selectedSiswaIds.has(s.id));
 
+  const headerClasses = "px-4 py-3 text-left text-sm font-medium text-slate-600 uppercase tracking-wider";
+
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50/50">
+      <table className="min-w-full divide-y divide-slate-200">
+        <thead className="bg-slate-50">
           <tr>
-            <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900">
+            <th scope="col" className="py-3 pl-4 pr-3">
               <input 
                 type="checkbox" 
-                className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                 checked={areAllOnPageSelected}
                 onChange={(e) => onSelectAll(e.target.checked)}
               />
@@ -53,63 +55,63 @@ const SiswaTable: React.FC<SiswaTableProps> = ({
             <th 
               onClick={() => onSort('nama')} 
               scope="col" 
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+              className={`${headerClasses} cursor-pointer group hover:bg-slate-100`}
             >
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 Nama {getSortIcon('nama')}
               </div>
             </th>
             <th 
               onClick={() => onSort('nisn')} 
               scope="col" 
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+              className={`${headerClasses} cursor-pointer group hover:bg-slate-100`}
             >
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 NISN {getSortIcon('nisn')}
               </div>
             </th>
             <th 
               onClick={() => onSort('kelas')} 
               scope="col" 
-              className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
+              className={`${headerClasses} cursor-pointer group hover:bg-slate-100`}
             >
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 Kelas {getSortIcon('kelas')}
               </div>
             </th>
-            <th scope="col" className="relative py-3.5 pl-3 pr-4">
+            <th scope="col" className="relative py-3 pl-3 pr-4">
               <span className="sr-only">Aksi</span>
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-slate-200 bg-white">
           {siswaList.map((siswa) => (
             <tr 
               key={siswa.id} 
-              className={`hover:bg-gray-50 ${selectedSiswaIds.has(siswa.id) ? 'bg-blue-50' : ''}`}>
-              <td className="py-4 pl-4 pr-3 text-sm">
+              className={`hover:bg-slate-50 ${selectedSiswaIds.has(siswa.id) ? 'bg-blue-50/50' : ''}`}>
+              <td className="py-3 pl-4 pr-3">
                 <input 
                   type="checkbox" 
-                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  className="h-4 w-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                   checked={selectedSiswaIds.has(siswa.id)}
                   onChange={(e) => onSelectionChange(siswa.id, e.target.checked)}
                 />
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+              <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-900">
                 {siswa.nama}
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+              <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
                 {siswa.nisn}
               </td>
-              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+              <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">
                 {siswa.kelas}
               </td>
-              <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium">
+              <td className="relative whitespace-nowrap py-3 pl-3 pr-4 text-right text-sm font-medium">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(siswa)}
-                  className="text-indigo-600 hover:text-indigo-900"
+                  className="text-primary-600 hover:text-primary-700"
                 >
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -117,7 +119,7 @@ const SiswaTable: React.FC<SiswaTableProps> = ({
                   variant="ghost"
                   size="icon"
                   onClick={() => onDelete(siswa.id)}
-                  className="text-red-600 hover:text-red-900 ml-2"
+                  className="text-red-500 hover:text-red-600 ml-2"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -130,4 +132,4 @@ const SiswaTable: React.FC<SiswaTableProps> = ({
   );
 };
 
-export default SiswaTable;
+export default SiswaTable; 

@@ -53,9 +53,6 @@ export interface GuruProfile {
   tanggalLahir: string;
   foto: string | null;
   fotoLatar: string | null;
-  tentang: string;
-  kualifikasi: string;
-  pengalaman: string;
 }
 
 export interface AIAnalysisResponse {
@@ -85,13 +82,13 @@ export class AppDB extends Dexie {
 
   constructor() {
     super('AppDatabase');
-    this.version(5).stores({ // Bump version due to schema changes
+    this.version(7).stores({ // Bump version to remove unused fields
       students: '++id, name, nisn, class',
       subjects: '++id, nama, waliKelas, kontakWaliKelas',
       grades: '++id, &[studentId+subjectId]',
-      settings: '++id, apiKey', // Add apiKey to settings
+      settings: '++id, apiKey',
       guruProfiles: '++id, nama, nip',
-      analyses: 'id, type, timestamp', // 'id' as primary key, not auto-incremented
+      analyses: 'id, type, timestamp',
       activities: '++id, timestamp, type',
     });
 
