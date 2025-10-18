@@ -2,8 +2,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import Button from '@/Komponen/Button';
 import toast, { Toaster } from 'react-hot-toast';
 import ProfileHeader from '../components/ProfileHeader';
-import JadwalPelajaran from '../components/JadwalPelajaran';
 import PageHeader from '@/Komponen/PageHeader'; // Impor komponen baru
+import JadwalPelajaran from '../components/JadwalPelajaran';
 import { useGuruData } from '../hooks/useGuruData';
 import { Camera, Mail, Phone, User, Edit, Image as ImageIcon } from 'lucide-react';
 import type { GuruProfile } from '@/data/database';
@@ -12,38 +12,32 @@ import { CropImageModal } from '../components/CropImageModal';
 import { PixelCrop } from 'react-image-crop';
 
 const GuruPage: React.FC = () => {
-  const { profile, loading, updateProfile } = useGuruData();
+  const { profile, profileLoading, scheduleLoading, isUpdating, updateProfile } = useGuruData();
   const [isEditing, setIsEditing] = useState(false);
 
   const profileImageCrop = useImageCrop();
   const bgImageCrop = useImageCrop();
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const profileImgRef = useRef<HTMLImageElement>(null);
+  const bgImgRef = useRef<HTMLImageElement>(null);
+  const profileFileInputRef = useRef<HTMLInputElement>(null);
   const bgFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleProfileImageSave = async (crop: PixelCrop) => {
-    if (profileImageCrop.image) {
-      const imageElement = new Image();
-      imageElement.src = profileImageCrop.image;
-      imageElement.onload = async () => {
-        const croppedImageUrl = await getCroppedImg(imageElement, crop);
-        await updateProfile({ foto: croppedImageUrl });
-        profileImageCrop.reset();
-        toast.success('Foto profil berhasil diperbarui');
-      };
+    if (profileImgRef.current) {
+      const croppedImageUrl = await getCroppedImg(profileImgRef.current, crop);
+      await updateProfile({ foto: croppedImageUrl });
+      profileImageCrop.reset();
+      toast.success('Foto profil berhasil diperbarui');
     }
   };
 
   const handleBgImageSave = async (crop: PixelCrop) => {
-    if (bgImageCrop.image) {
-      const imageElement = new Image();
-      imageElement.src = bgImageCrop.image;
-      imageElement.onload = async () => {
-        const croppedImageUrl = await getCroppedImg(imageElement, crop);
-        await updateProfile({ fotoLatar: croppedImageUrl });
-        bgImageCrop.reset();
-        toast.success('Foto latar berhasil diperbarui');
-      };
+    if (bgImgRef.current) {
+      const croppedImageUrl = await getCroppedImg(bgImgRef.current, crop);
+      await updateProfile({ fotoLatar: croppedImageUrl });
+      bgImageCrop.reset();
+      toast.success('Foto latar berhasil diperbarui');
     }
   };
 
@@ -58,14 +52,6 @@ const GuruPage: React.FC = () => {
     }
   }, [updateProfile]);
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-6">
       <Toaster position="top-right" />
@@ -75,7 +61,11 @@ const GuruPage: React.FC = () => {
         subtitle="Kelola informasi dan detail profil Anda."
       />
 
-      {profile && (
+      {profileLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+        </div>
+      ) : profile ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-xl shadow-soft overflow-hidden">
@@ -117,7 +107,7 @@ const GuruPage: React.FC = () => {
                     )}
                     
                     <button
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => profileFileInputRef.current?.click()}
                       className="absolute bottom-1 right-1 bg-primary-600 text-white rounded-full p-2 shadow-md hover:bg-primary-700 transition-colors"
                       aria-label="Ubah foto profil"
                     >
@@ -129,19 +119,18 @@ const GuruPage: React.FC = () => {
 
               <div className="pt-20 p-6 text-center">
                 <input
-                  type="file"
-                  ref={fileInputRef}
+                  type="file" 
+                  ref={profileFileInputRef}
                   onChange={profileImageCrop.onFileChange}
                   accept="image/*"
                   className="hidden"
                 />
                 <h2 className="text-xl font-semibold mt-4 text-slate-800">{profile.nama || 'Nama Guru'}</h2>
                 <p className="text-slate-600">{profile.mataPelajaran || 'Mata Pelajaran'}</p>
-                
                 <div className="mt-4 w-full">
                   <Button 
                     onClick={() => setIsEditing(!isEditing)}
-                    variant="primary"
+                    variant={isEditing ? 'secondary' : 'primary'}
                     fullWidth
                   >
                     <Edit className="mr-2 h-4 w-4" />
@@ -150,7 +139,6 @@ const GuruPage: React.FC = () => {
                 </div>
               </div>
             </div>
-            
             <div className="bg-white rounded-xl shadow-soft p-6">
               <h3 className="font-medium text-slate-800 mb-3">Informasi Kontak</h3>
               <div className="space-y-3 text-sm text-slate-600">
@@ -168,15 +156,13 @@ const GuruPage: React.FC = () => {
           
           <div className="lg:col-span-2 space-y-6">
             <ProfileHeader profile={profile} onSave={handleSaveProfile} isEditing={isEditing} />
-            <JadwalPelajaran />
+            <JadwalPelajaran kelasOptions={profile.kelas || []} isLoading={scheduleLoading} />
           </div>
         </div>
-      )}
-
-      {!profile && !loading && (
+      ) : (
         <div className="text-center py-10">
           <p className="text-slate-500">Gagal memuat data profil guru atau profil belum dibuat.</p>
-          <Button onClick={() => updateProfile({})} className="mt-4">
+          <Button onClick={() => handleSaveProfile({})} className="mt-4" disabled={isUpdating}>
             Buat Profil Guru
           </Button>
         </div>
@@ -189,6 +175,8 @@ const GuruPage: React.FC = () => {
           onConfirm={handleProfileImageSave}
           image={profileImageCrop.image}
           crop={profileImageCrop.crop}
+          ref={profileImgRef}
+          completedCrop={profileImageCrop.completedCrop}
           setCrop={profileImageCrop.setCrop}
           setCompletedCrop={profileImageCrop.setCompletedCrop}
           title="Potong Foto Profil"
@@ -202,6 +190,8 @@ const GuruPage: React.FC = () => {
           onConfirm={handleBgImageSave}
           image={bgImageCrop.image}
           crop={bgImageCrop.crop}
+          ref={bgImgRef}
+          completedCrop={bgImageCrop.completedCrop}
           setCrop={bgImageCrop.setCrop}
           setCompletedCrop={bgImageCrop.setCompletedCrop}
           aspect={16 / 6}

@@ -1,21 +1,24 @@
 import React, { useEffect, forwardRef } from 'react';
-import type { GuruProfile } from '@/data/database';
+import type { GuruProfile } from '@/data/database'; // Pastikan path ini benar
 import Button from '@/Komponen/Button';
 import { X, User, Book, Users, Hash, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 import { useForm, Controller, UseFormRegister, FieldError } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 
+// Skema untuk validasi saat mengedit profil.
+// Beberapa field dibuat wajib untuk memastikan data penting terisi.
 const profileSchema = z.object({
-  nama: z.string().optional().or(z.literal('')),
-  mataPelajaran: z.string().optional().or(z.literal('')),
+  nama: z.string().min(1, "Nama lengkap tidak boleh kosong."),
+  mataPelajaran: z.string().min(1, "Mata pelajaran tidak boleh kosong."),
   kelas: z.array(z.string()).default([]),
   nip: z.string().optional().or(z.literal('')),
-  email: z.string().email('Format email tidak valid.').optional().or(z.literal('')),
+  email: z.string().email('Format email tidak valid').optional().or(z.literal('')),
   telepon: z.string().optional().or(z.literal('')),
   alamat: z.string().optional().or(z.literal('')),
   tanggalLahir: z.string().optional().or(z.literal('')),
 });
+
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
@@ -113,10 +116,12 @@ const FormField: React.FC<FormFieldProps> = ({
         type={type}
         placeholder={placeholder}
         className={`block w-full ${icon ? 'pl-10' : ''} rounded-md border-slate-300 focus:border-primary-500 focus:ring-primary-500 text-sm`}
+        aria-invalid={!!error}
+        aria-describedby={error ? `${name}-error` : undefined}
         rows={Component === 'textarea' ? 3 : undefined}
       />
     </div>
-    {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
+    {error && <p id={`${name}-error`} className="mt-1 text-sm text-red-600">{error.message}</p>}
   </div>
 );
 
@@ -132,14 +137,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, onSave, isEditin
     handleSubmit,
     control,
     reset,
-    watch, // <-- 1. Impor watch
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
+    defaultValues: profile || {},
   });
-
-  // 2. Panggil watch untuk mendapatkan nilai form terbaru
-  const watchedValues = watch();
 
   useEffect(() => {
     if (profile) {
@@ -152,13 +154,10 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, onSave, isEditin
       <div className="bg-white rounded-xl shadow-soft p-6">
         <h2 className="text-xl font-bold text-slate-800 mb-6">Informasi Profil</h2>
         <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-          {/* 3. Gunakan watchedValues sebagai sumber data tampilan */}
           <div className="flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><User size={20} /></div><div><dt className="text-sm font-medium text-slate-500">Nama Lengkap</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.nama || '-'}</dd></div></div>
           <div className="flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><Book size={20} /></div><div><dt className="text-sm font-medium text-slate-500">Mata Pelajaran</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.mataPelajaran || '-'}</dd></div></div>
           <div className="md:col-span-2 flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><Users size={20} /></div><div><dt className="text-sm font-medium text-slate-500">Kelas yang Diampu</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.kelas && profile.kelas.length > 0 ? profile.kelas.join(', ') : '-'}</dd></div></div>
           <div className="flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><Hash size={20} /></div><div><dt className="text-sm font-medium text-slate-500">NIP/NUPTK</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.nip || '-'}</dd></div></div>
-          <div className="flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><Mail size={20} /></div><div><dt className="text-sm font-medium text-slate-500">Email</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.email || '-'}</dd></div></div>
-          <div className="flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><Phone size={20} /></div><div><dt className="text-sm font-medium text-slate-500">Telepon</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.telepon || '-'}</dd></div></div>
           <div className="flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><Calendar size={20} /></div><div><dt className="text-sm font-medium text-slate-500">Tanggal Lahir</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.tanggalLahir || '-'}</dd></div></div>
           <div className="md:col-span-2 flex items-start space-x-4"><div className="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-lg bg-primary-50 text-primary-500"><MapPin size={20} /></div><div><dt className="text-sm font-medium text-slate-500">Alamat</dt><dd className="mt-1 text-lg font-semibold text-slate-800">{profile.alamat || '-'}</dd></div></div>
         </dl>

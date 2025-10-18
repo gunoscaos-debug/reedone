@@ -1,67 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, Edit, Save, X, Plus, Trash2 } from 'lucide-react';
 import Button from '@/Komponen/Button';
+import { useGuruData } from '../hooks/useGuruData';
+import toast from 'react-hot-toast';
 
 const initialScheduleData = {
   senin: [
-    { time: '07:00 - 08:30', subject: 'Matematika', class: 'Kelas 10A' },
-    { time: '09:00 - 10:30', subject: 'Fisika', class: 'Kelas 11B' },
+    { startTime: '07:00', endTime: '08:30', subject: 'Matematika', class: 'Kelas 10A' },
+    { startTime: '09:00', endTime: '10:30', subject: 'Fisika', class: 'Kelas 11B' },
   ],
   selasa: [
-    { time: '07:00 - 08:30', subject: 'Kimia', class: 'Kelas 12C' },
+    { startTime: '07:00', endTime: '08:30', subject: 'Kimia', class: 'Kelas 12C' },
   ],
   rabu: [
-    { time: '09:00 - 10:30', subject: 'Biologi', class: 'Kelas 10A' },
+    { startTime: '09:00', endTime: '10:30', subject: 'Biologi', class: 'Kelas 10A' },
   ],
   kamis: [],
   jumat: [
-    { time: '07:00 - 08:30', subject: 'Matematika', class: 'Kelas 11B' },
-    { time: '09:00 - 10:30', subject: 'Fisika', class: 'Kelas 12C' },
+    { startTime: '07:00', endTime: '08:30', subject: 'Matematika', class: 'Kelas 11B' },
+    { startTime: '09:00', endTime: '10:30', subject: 'Fisika', class: 'Kelas 12C' },
   ],
   sabtu: [],
 };
 
 type Day = keyof typeof initialScheduleData;
 
-const JadwalPelajaran: React.FC = () => {
-  const [scheduleData, setScheduleData] = useState(initialScheduleData);
+// Tipe untuk satu item jadwal
+type ScheduleItem = { startTime: string; endTime: string; subject: string; class: string; }; // Data yang disimpan
+type EditableScheduleItem = ScheduleItem & { _id: string }; // Data saat diedit
+
+type ScheduleData = Record<Day, ScheduleItem[]>;
+type EditableScheduleData = Record<Day, EditableScheduleItem[]>;
+
+interface JadwalPelajaranProps {
+  kelasOptions: string[];
+  isLoading: boolean;
+}
+
+const JadwalPelajaran: React.FC<JadwalPelajaranProps> = ({ kelasOptions, isLoading }) => {
+  const { schedule, updateSchedule, isUpdatingSchedule } = useGuruData();
+  const [scheduleData, setScheduleData] = useState<ScheduleData>(initialScheduleData);
   const [activeDay, setActiveDay] = useState<Day>('senin');
   const [isEditing, setIsEditing] = useState(false);
-  const [tempScheduleData, setTempScheduleData] = useState(initialScheduleData);
+  const [tempScheduleData, setTempScheduleData] = useState<EditableScheduleData>(initialScheduleData as EditableScheduleData);
+
+  useEffect(() => {
+    if (schedule) {
+      // Gabungkan data dari DB dengan struktur awal untuk memastikan semua hari ada
+      const fullSchedule = { ...initialScheduleData, ...schedule };
+      setScheduleData(fullSchedule);
+    }
+  }, [schedule]);
 
   const days: Day[] = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
 
-  const handleEdit = () => {
-    setTempScheduleData(scheduleData);
+  const handleEdit = useCallback(() => {
+    // Tambahkan ID unik sementara untuk setiap item saat masuk mode edit
+    const editableData = Object.entries(scheduleData).reduce((acc, [day, items]) => {
+      acc[day as Day] = items.map(item => ({ ...item, _id: crypto.randomUUID() }));
+      return acc;
+    }, {} as EditableScheduleData);
+    setTempScheduleData(editableData);
     setIsEditing(true);
-  };
+  }, [scheduleData]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setIsEditing(false);
-  };
+  }, []);
 
-  const handleSave = () => {
-    setScheduleData(tempScheduleData);
-    setIsEditing(false);
-  };
+  const handleSave = useCallback(async () => {
+    try {
+      // Hapus ID sementara sebelum menyimpan
+      const dataToSave = Object.entries(tempScheduleData).reduce((acc, [day, items]) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        acc[day as Day] = items.map(({ _id, ...rest }) => rest); 
+        return acc;
+      }, {} as ScheduleData);
 
-  const handleScheduleChange = (day: Day, index: number, field: string, value: string) => {
+      await updateSchedule(dataToSave);
+      toast.success('Jadwal berhasil disimpan.');
+      setIsEditing(false);
+    } catch {
+      toast.error('Gagal menyimpan jadwal.');
+    }
+  }, [tempScheduleData, updateSchedule]);
+
+  const handleScheduleChange = useCallback((day: Day, id: string, field: keyof ScheduleItem, value: string) => {
     const newSchedule = { ...tempScheduleData };
-    newSchedule[day][index] = { ...newSchedule[day][index], [field]: value };
-    setTempScheduleData(newSchedule);
-  };
+    const itemIndex = newSchedule[day].findIndex(item => item._id === id);
+    if (itemIndex > -1) {
+      newSchedule[day][itemIndex] = { ...newSchedule[day][itemIndex], [field]: value };
+      setTempScheduleData(newSchedule);
+    }
+  }, [tempScheduleData]);
 
-  const addScheduleItem = (day: Day) => {
+  const addScheduleItem = useCallback((day: Day) => {
     const newSchedule = { ...tempScheduleData };
-    newSchedule[day].push({ time: '', subject: '', class: '' });
+    newSchedule[day].push({ _id: crypto.randomUUID(), startTime: '', endTime: '', subject: '', class: '' });
     setTempScheduleData(newSchedule);
-  };
+  }, [tempScheduleData]);
 
-  const removeScheduleItem = (day: Day, index: number) => {
+  const removeScheduleItem = useCallback((day: Day, id: string) => {
     const newSchedule = { ...tempScheduleData };
-    newSchedule[day].splice(index, 1);
+    newSchedule[day] = newSchedule[day].filter(item => item._id !== id);
     setTempScheduleData(newSchedule);
-  };
+  }, [tempScheduleData]);
 
   return (
     <div className="bg-white rounded-xl shadow-soft p-6">
@@ -73,13 +116,12 @@ const JadwalPelajaran: React.FC = () => {
         <div>
           {isEditing ? (
             <div className="flex space-x-2">
-              <Button onClick={handleCancel} variant="outline" size="sm">
+              <Button onClick={handleCancel} variant="outline" size="sm" disabled={isUpdatingSchedule}>
                 <X className="h-4 w-4 mr-2" />
                 Batal
               </Button>
-              <Button onClick={handleSave} size="sm">
-                <Save className="h-4 w-4 mr-2" />
-                Simpan
+              <Button onClick={handleSave} size="sm" disabled={isUpdatingSchedule}>
+                {isUpdatingSchedule ? 'Menyimpan...' : <><Save className="h-4 w-4 mr-2" /> Simpan</>}
               </Button>
             </div>
           ) : (
@@ -110,33 +152,49 @@ const JadwalPelajaran: React.FC = () => {
         </nav>
       </div>
 
+      {isLoading && (
+        <div className="flex justify-center items-center py-10">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+        </div>
+      )}
+
+      {!isLoading && (
       <div>
         {isEditing ? (
           <div className="space-y-4">
-            {tempScheduleData[activeDay].map((item, index) => (
-              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-                <input
-                  type="text"
-                  placeholder="Waktu (cth: 07:00 - 08:30)"
-                  value={item.time}
-                  onChange={(e) => handleScheduleChange(activeDay, index, 'time', e.target.value)}
-                  className="input-field"
-                />
+            {tempScheduleData[activeDay].map((item) => (              
+              <div key={item._id} className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end p-3 bg-slate-50 rounded-lg border">
+                <div className="flex items-center gap-2 md:col-span-2">
+                  <div>
+                    <label className="text-xs text-slate-500">Mulai</label>
+                    <input type="time" value={item.startTime} onChange={(e) => handleScheduleChange(activeDay, item._id, 'startTime', e.target.value)} className="input-field w-full" />
+                  </div>
+                  <span className="pt-5 text-slate-400">-</span>
+                  <div>
+                    <label className="text-xs text-slate-500">Selesai</label>
+                    <input type="time" value={item.endTime} onChange={(e) => handleScheduleChange(activeDay, item._id, 'endTime', e.target.value)} className="input-field w-full" />
+                  </div>
+                </div>
                 <input
                   type="text"
                   placeholder="Mata Pelajaran"
                   value={item.subject}
-                  onChange={(e) => handleScheduleChange(activeDay, index, 'subject', e.target.value)}
-                  className="input-field md:col-span-1"
+                  onChange={(e) => handleScheduleChange(activeDay, item._id, 'subject', e.target.value)}
+                  className="input-field md:col-span-1 mt-5 md:mt-0"
                 />
-                <input
-                  type="text"
-                  placeholder="Kelas"
+                <select
                   value={item.class}
-                  onChange={(e) => handleScheduleChange(activeDay, index, 'class', e.target.value)}
-                  className="input-field"
-                />
-                <Button onClick={() => removeScheduleItem(activeDay, index)} variant="danger" size="icon">
+                  onChange={(e) => handleScheduleChange(activeDay, item._id, 'class', e.target.value)}
+                  className="input-field mt-5 md:mt-0"
+                >
+                  <option value="">Pilih Kelas</option>
+                  {kelasOptions.map((kelas) => (
+                    <option key={kelas} value={kelas}>
+                      {kelas}
+                    </option>
+                  ))}
+                </select>
+                <Button onClick={() => removeScheduleItem(activeDay, item._id)} variant="danger" size="icon" aria-label="Hapus jadwal">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -158,7 +216,7 @@ const JadwalPelajaran: React.FC = () => {
                   <p className="text-sm text-slate-500">{item.class}</p>
                 </div>
                 <div className="text-sm text-slate-600 font-medium">
-                  {item.time}
+                  {item.startTime && item.endTime ? `${item.startTime} - ${item.endTime}` : 'Waktu belum diatur'}
                 </div>
               </li>
             ))}
@@ -169,6 +227,7 @@ const JadwalPelajaran: React.FC = () => {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

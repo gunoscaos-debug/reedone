@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { forwardRef } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import Button from '@/Komponen/Button';
@@ -9,28 +9,28 @@ interface CropImageModalProps {
   onConfirm: (crop: PixelCrop) => void;
   image: string;
   crop: Crop | undefined;
+  completedCrop: PixelCrop | undefined;
   setCrop: (crop: Crop) => void;
   setCompletedCrop: (crop: PixelCrop) => void;
   aspect?: number;
   title: string;
 }
 
-export const CropImageModal: React.FC<CropImageModalProps> = ({ 
+export const CropImageModal = forwardRef<HTMLImageElement, CropImageModalProps>(({ 
   isOpen, 
   onClose, 
   onConfirm, 
   image, 
   crop, 
+  completedCrop,
   setCrop, 
   setCompletedCrop, 
   aspect = 1, 
   title 
-}) => {
-  const imgRef = useRef<HTMLImageElement>(null);
-
+}, ref) => {
   const handleConfirm = () => {
-    if (imgRef.current && completedCrop) {
-      onConfirm(completedCrop);
+    if (completedCrop) {
+      onConfirm(completedCrop); // imgRef.current tidak lagi dibutuhkan di sini
     }
   };
 
@@ -49,8 +49,8 @@ export const CropImageModal: React.FC<CropImageModalProps> = ({
             onComplete={(c) => setCompletedCrop(c)}
             aspect={aspect}
             circularCrop={aspect === 1}
-          >
-            <img ref={imgRef} alt="Crop me" src={image} />
+          > 
+            <img ref={ref} alt="Crop me" src={image} style={{maxHeight: '70vh'}} />
           </ReactCrop>
         </div>
         <div className="flex justify-end space-x-3 mt-4">
@@ -64,4 +64,4 @@ export const CropImageModal: React.FC<CropImageModalProps> = ({
       </div>
     </div>
   );
-};
+});

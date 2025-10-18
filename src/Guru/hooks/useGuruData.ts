@@ -1,48 +1,65 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { db as apiDb, type GuruProfile } from '@/data/database';
+import { db as apiDb, type GuruProfile, type ScheduleData } from '@/data/database';
 
-// Fungsi untuk mengambil data profil. Jika tidak ada, buat dan kembalikan profil default.
-const fetchGuruProfile = async (): Promise<GuruProfile> => {
-  let profile = (await apiDb.guruProfiles.toArray())[0];
-
-  if (!profile) {
-    console.log('Tidak ada profil ditemukan, membuat profil default di database...');
-    const defaultProfileData: Omit<GuruProfile, 'id'> = {
-      nama: 'Nama Guru',
-      nip: '',
-      mataPelajaran: 'Belum diatur',
-      kelas: [],
-      email: '',
-      telepon: '',
-      alamat: '',
-      tanggalLahir: '',
-      foto: null,
-      fotoLatar: null,
-    };
-    const id = await apiDb.guruProfiles.add(defaultProfileData as GuruProfile);
-    profile = { ...defaultProfileData, id } as GuruProfile;
-  }
-
-  return profile;
+// Fungsi untuk mengambil data profil. Mengembalikan profil atau null jika tidak ada.
+const fetchGuruProfile = async (): Promise<GuruProfile | null> => {
+  const profile = (await apiDb.guruProfiles.toArray())[0];
+  return profile || null;
 };
 
-// Fungsi ini sekarang hanya untuk memperbarui, karena fetch menjamin data ada.
+// Fungsi untuk membuat atau memperbarui profil guru.
 const updateGuruProfile = async (data: Partial<GuruProfile>): Promise<GuruProfile> => {
-  // Ambil ID profil yang ada. Seharusnya selalu ada satu.
   const existingProfile = (await apiDb.guruProfiles.toArray())[0];
-  if (!existingProfile || !existingProfile.id) {
-    throw new Error('Tidak dapat menemukan profil untuk diperbarui.');
-  }
 
-  await apiDb.guruProfiles.update(existingProfile.id, data);
-  
-  const updatedProfile = await apiDb.guruProfiles.get(existingProfile.id);
-  if (!updatedProfile) {
-    throw new Error('Gagal mengambil profil setelah pembaruan.');
+  if (existingProfile?.id) {
+    // Jika profil sudah ada, perbarui
+    await apiDb.guruProfiles.update(existingProfile.id, data);
+    const updatedProfile = await apiDb.guruProfiles.get(existingProfile.id);
+    if (!updatedProfile) {
+      throw new Error('Gagal mengambil profil setelah pembaruan.');
+    }
+    return updatedProfile;
+  } else {
+    // Jika profil belum ada, buat yang baru
+    console.log('Tidak ada profil ditemukan, membuat profil baru di database...');
+    const newProfileData: Omit<GuruProfile, 'id'> = {
+      nama: data.nama || 'Nama Guru',
+      nip: data.nip || '',
+      mataPelajaran: data.mataPelajaran || 'Belum diatur',
+      kelas: data.kelas || [],
+      email: data.email || '',
+      telepon: data.telepon || '',
+      alamat: data.alamat || '',
+      tanggalLahir: data.tanggalLahir || '',
+      foto: data.foto || null,
+      fotoLatar: data.fotoLatar || null,
+      ...data,
+    };
+    const id = await apiDb.guruProfiles.add(newProfileData as GuruProfile);
+    return { ...newProfileData, id } as GuruProfile;
   }
-
-  return updatedProfile;
 };
+
+// Fungsi untuk mengambil data jadwal.
+const fetchGuruSchedule = async (): Promise<ScheduleData | null> => {
+  const schedule = (await apiDb.guruSchedules.toArray())[0];
+  return schedule || null;
+};
+
+// Fungsi untuk membuat atau memperbarui jadwal guru.
+const updateGuruSchedule = async (data: ScheduleData): Promise<ScheduleData> => {
+  const existingSchedule = (await apiDb.guruSchedules.toArray())[0];
+  if (existingSchedule?.id) {
+    await apiDb.guruSchedules.update(existingSchedule.id, data);
+    const updatedSchedule = await apiDb.guruSchedules.get(existingSchedule.id);
+    if (!updatedSchedule) throw new Error('Gagal mengambil jadwal setelah pembaruan.');
+    return updatedSchedule;
+  } else {
+    const id = await apiDb.guruSchedules.add(data);
+    return { ...data, id };
+  }
+};
+
 
 export const useGuruData = () => {
   const queryClient = useQueryClient();
@@ -52,6 +69,12 @@ export const useGuruData = () => {
     queryFn: fetchGuruProfile,
     // Opsi ini penting agar query tidak otomatis refetch di background,
     // yang bisa menyebabkan data form ter-reset tiba-tiba.
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: schedule, isLoading: scheduleLoading } = useQuery({
+    queryKey: ['guruSchedule'],
+    queryFn: fetchGuruSchedule,
     refetchOnWindowFocus: false,
   });
 
@@ -67,15 +90,27 @@ export const useGuruData = () => {
     },
   });
 
+  const { mutateAsync: updateSchedule, isPending: isUpdatingSchedule } = useMutation({
+    mutationFn: updateGuruSchedule,
+    onSuccess: (updatedData) => {
+      queryClient.setQueryData(['guruSchedule'], updatedData);
+    },
+    onError: (error) => {
+      console.error('Gagal memperbarui jadwal:', error);
+    },
+  });
+
   return {
-    // Karena fetchGuruProfile sekarang selalu mengembalikan profil,
-    // kita tidak perlu lagi menangani kasus null di sini.
-    profile: profile!,
-    loading,
+    profile: profile || null,
+    schedule: schedule || null,
+    profileLoading: loading,
+    scheduleLoading,
     isUpdating,
+    isUpdatingSchedule,
     isError,
     error,
     updateProfile,
+    updateSchedule,
     refreshData: () => queryClient.invalidateQueries({ queryKey: ['guruProfile'] }),
   };
 };
